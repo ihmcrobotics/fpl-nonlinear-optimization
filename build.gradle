@@ -18,6 +18,7 @@ sourceSets
 }
 
 sourceCompatibility = 1.7
+targetCompatibility = 1.7
 version = 1.0
 
 jar {
@@ -27,7 +28,7 @@ jar {
       "Implementation-Title": project.name,
       "Implementation-Version": project.version,
       "Implementation-Vendor": "FPL Statistics Group",
-      
+
       "Bundle-Name": project.name,
       "Bundle-Version": project.version,
       "Bundle-License": "Public Domain",
@@ -47,7 +48,7 @@ publishing {
 			artifactId 'NonLinearOptimization'
 			version "$version"
 			from components.java
-			
+
 			pom.withXml {
                             asNode().children().last() + {
                                 resolveStrategy = Closure.DELEGATE_FIRST
@@ -62,21 +63,47 @@ publishing {
                             }
 
                         }
-			
+
 			artifact sourceJar {
 				classifier "sources"
 			}
 		}
 
 	}
+}
 
-	repositories {
-		maven {
-			credentials {
-				username project.hasProperty('nexus_username')?"${nexus_username}":"invalid"
-				password project.hasProperty('nexus_password')?"${nexus_password}":"invalid"
-			}
-			url "https://bengal.ihmc.us/nexus/content/repositories/releases"
-		}
-	}
+bintray {
+    user = project.hasProperty("bintray_user") ? project.bintray_user : "invalid"
+    key = project.hasProperty("bintray_key") ? project.bintray_key : "invalid"
+
+    if (user.equals("invalid")) {
+        project.logger.debug("Bintray user name property not set. Please set the 'bintray_user' property in ~/.gradle/gradle.properties. See https://github.com/bintray/gradle-bintray-plugin")
+    }
+
+    if (key.equals("invalid")) {
+        project.logger.debug("Bintray API key property not set. Please set the 'bintray_key' property in ~/.gradle/gradle.properties. See https://github.com/bintray/gradle-bintray-plugin")
+    }
+
+    dryRun = false
+    publish = false
+
+    publications = ["mavenJava"]
+
+    pkg {
+        repo = "maven-vendor"
+        userOrg = "ihmcrobotics"
+        name = "FPLNonlinearOptimization"
+        desc = "Maven artifact providing FPL Stast Unit's Nonlinear Optimization Library"
+
+        websiteUrl = "http://www1.fpl.fs.fed.us/optimization.html"
+        vcsUrl = "https://github.com/ihmcrobotics/fpl-nonlinear-optimization/tree/master.git"
+
+        licenses = ['Public Domain']
+        labels = ['java', 'nonlinear-optimization', 'vendored']
+
+        version {
+            name = project.version
+            released = new Date()
+        }
+    }
 }
